@@ -2,13 +2,18 @@ package com.headshands
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
 import com.jakewharton.rxbinding2.widget.RxTextView
+import io.navendra.retrofitkotlindeferred.service.ApiFactory
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
@@ -96,4 +101,46 @@ class MainActivity : AppCompatActivity() {
             return (passwordMatcher.find(password) != null)
         } ?: return false
     }
+
+    override fun onResume() {
+        super.onResume()
+
+        val shopsService = ApiFactory.shopsApi
+
+        GlobalScope.launch(Dispatchers.Main) {
+            val shopListRequest = shopsService.getData()
+            try {
+                val response = shopListRequest.await()
+                if(response.isSuccessful){
+                    val shopsResponse = response.body() //This is single object Tmdb Movie response
+                    val list  = shopsResponse?.message // This is list of TMDB Movie
+                    Log.d("MainActivity ","jr")
+                }else{
+                    Log.d("MainActivity ",response.errorBody().toString())
+                }
+            }catch (e: java.lang.Exception){
+
+            }
+        }
+    }
 }
+
+/*
+myJob = CoroutineScope(Dispatchers.IO).launch {
+    val result = repo.getLeagues()
+    withContext(Dispatchers.Main) {
+        //do something with result
+    }
+}
+
+private var myJob: Job? = null
+override fun onDestroy() {
+    myJob?.cancel()
+    super.onDestroy()
+}
+
+override suspend fun getData(): List<MyData> {
+    val result = myService.getData().await()
+    return result.map { myDataMapper.mapFromRemote(it) }
+}
+ */
