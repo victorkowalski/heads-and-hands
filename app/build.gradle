@@ -13,6 +13,10 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        // Additional properties specific to the build
+        buildConfigField "String", "WEATHER_API_ENDPOINT", "\"http://api.openweathermap.org/\""
+        buildConfigField "String", "WEATHER_API_APP_ID", "\"f04391f2a7b156421675d08ac24dc908\""
     }
     buildTypes {
         release {

@@ -1,4 +1,4 @@
-package com.headshands.data
+package com.headshands.forecast.data
 
 data class ShopResponse(var code: String, var message: List<Shop>)
 

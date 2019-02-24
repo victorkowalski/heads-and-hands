@@ -1,6 +1,6 @@
 package io.navendra.retrofitkotlindeferred.service
 
-import com.headshands.data.ShopResponse
+import com.headshands.forecast.data.ShopResponse
 import kotlinx.coroutines.Deferred
 import retrofit2.Response
 import retrofit2.http.GET

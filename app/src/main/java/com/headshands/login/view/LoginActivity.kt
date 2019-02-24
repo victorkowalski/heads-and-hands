@@ -1,9 +1,10 @@
-package com.headshands
+package com.headshands.login.view
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
+import com.headshands.App
 import com.jakewharton.rxbinding2.widget.RxTextView
 import io.navendra.retrofitkotlindeferred.service.ApiFactory
 import io.reactivex.Observable
@@ -16,7 +17,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,6 +106,24 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        val weatherService = ApiFactory.weatherApi
+
+        GlobalScope.launch(Dispatchers.Main) {
+            val weatherRequest = weatherService.getCurrentWeather(App.givenCity.cityAndCountry)
+            try {
+                val response = weatherRequest.await()
+                if(response.isSuccessful){
+                    val shopsResponse = response.body() //This is single object Tmdb Movie response
+                    val list  = shopsResponse?.message // This is list of TMDB Movie
+                    Log.d("MainActivity ","jr")
+                }else{
+                    Log.d("MainActivity ",response.errorBody().toString())
+                }
+            }catch (e: java.lang.Exception){
+
+            }
+        }
+       /*
         val shopsService = ApiFactory.shopsApi
 
         GlobalScope.launch(Dispatchers.Main) {
@@ -121,7 +140,7 @@ class MainActivity : AppCompatActivity() {
             }catch (e: java.lang.Exception){
 
             }
-        }
+        }*/
     }
 }
 
