@@ -50,7 +50,7 @@ class LoginActivity : AppCompatActivity() {
             .compose(retryWhenError {
                 wrapper_email.error = it.message
             })
-            .subscribe()
+            //.subscribe()
 
         val passwordObservable = RxTextView.afterTextChangeEvents(editText_password)
             .skipInitialValue()
@@ -63,16 +63,41 @@ class LoginActivity : AppCompatActivity() {
             .compose(retryWhenError {
                 wrapper_password.error = it.message
             })
-            .subscribe()
+            //.subscribe()
 
+        Observable.combineLatest(arrayOf(emailObservable, passwordObservable)) {
+            if(true) {
+                println("emailObservable --- "+emailObservable)
+                println("passwordObservable --- "+passwordObservable)
+            }
+        }.subscribe() {
+            println(it)
+        }
+  /*
+        val isSignInEnabled: Observable<Boolean> = Observable.combineLatest(
+            emailObservable,
+            passwordObservable,
+            BiFunction { u, p -> u == "true" && p == "true" })
+*/
+
+        fun test(args: Array<String>) {
+            val first = Observable.intervalRange(1, 10, 0, 2, TimeUnit.SECONDS)
+            val second = Observable.intervalRange(10, 20, 0, 1, TimeUnit.SECONDS)
+
+            Observable.combineLatest(arrayOf(first, second)) {
+                "${it[0]} -> ${it[1]}"
+            }.blockingSubscribe() {
+                println(it)
+            }
+        }
 //***************************************************************
-        val itemInputNameObservable1 = RxTextView.afterTextChangeEvents(editText_email)
+    /*    val itemInputNameObservable1 = RxTextView.afterTextChangeEvents(editText_email)
             .skipInitialValue()
             .map {
                 wrapper_email.error = null
                 it.view().text.toString()
             }
-                /*
+  */              /*
                 .skipInitialValue()
             .map {
                 wrapper_email.error = null
@@ -85,24 +110,24 @@ class LoginActivity : AppCompatActivity() {
             })
             .subscribe()
                  */
-
+/*
         val itemInputNameObservable2 = RxTextView.afterTextChangeEvents(editText_email)
             .skipInitialValue()
             .map {
                 wrapper_email.error = null
                 it.view().text.toString()
             }
-
+*/
             /*RxTextView.textChanges(autocomplete_textView)
                 .map { inputText: CharSequence -> inputText.isEmpty()
                         || !isValidCityInput(inputText.toString()) }
                 .distinctUntilChanged()*/
-
+/*
         val isSignInEnabled: Observable<Boolean> = Observable.combineLatest(
             itemInputNameObservable2,
             itemInputNameObservable1,
             BiFunction { u, p -> u == "true" && p == "true" })
-
+*/
 
     }
 
