@@ -1,0 +1,56 @@
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+
+    ObservableTransformer<String,Boolean> minCharacter(int min) {
+        return observable -> observable.map((t)->{
+            if(t.length()>min)
+                return true;
+            return false;
+        });
+    }
+    ObservableTransformer<String,Boolean> isEmailValid() {
+        return observable -> observable.map((t)->{
+            if(t==null||t.length()==0)
+                return true;
+            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(t);
+            return matcher.find();
+        });
+    }
+
+
+    public void test()
+    {
+        Observable<Boolean> usernameOb = RxTextView
+                .afterTextChangeEvents(username)
+                .skipInitialValue()
+                .doOnNext((t) -> tvUsernameError.setText(""))
+                .map((t) -> t.editable().toString())
+                .compose(isEmailValid())
+                .doOnNext((t)->{
+                    if(!t)
+                    {
+                        tvUsernameError.setText("Please check your username!");
+                    }
+                });
+
+
+        Observable<Boolean> passwordOb = RxTextView
+                .afterTextChangeEvents(password)
+                .skipInitialValue()
+                .doOnNext((t) -> tvPasswordError.setText(""))
+                .map((t) -> t.editable().toString())
+                .compose(minCharacter(6))
+                .doOnNext((t)->{
+                    if(!t)
+                    {
+                        tvPasswordError.setText("Please check your password!");
+                    }
+                });
+
+
+        Observable.combineLatest(usernameOb, passwordOb, (aBoolean, aBoolean2)->aBoolean&&aBoolean2)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe((t)->btnSend.setEnabled(t));
+
+
+    }
