@@ -8,12 +8,5 @@ class App : Application(){
     companion object {
         const val UNITS = "metric"
         val givenCity = City("New York", "us")
-        //lateinit var givenCity: City
     }
-
-    /*
-    override fun onCreate() {
-        super.onCreate()
-        givenCity = City("New York", "us")
-    }*/
 }
