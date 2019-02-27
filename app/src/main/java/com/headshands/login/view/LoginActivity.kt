@@ -13,6 +13,7 @@ import com.headshands.BuildConfig
 import com.headshands.service.api.ApiFactory
 import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.Observable
+import io.reactivex.Observer
 import io.reactivex.ObservableTransformer
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -27,6 +28,10 @@ import java.util.concurrent.TimeUnit
 import com.jakewharton.rxbinding2.view.RxView
 import android.R.attr.password
 import com.jakewharton.rxbinding2.widget.RxCompoundButton
+import io.reactivex.ObservableOnSubscribe
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
+import org.reactivestreams.Subscriber
 
 
 class LoginActivity : AppCompatActivity() {
@@ -35,17 +40,81 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(com.headshands.R.layout.activity_login)
         initialize()
+
+        button_login.setOnClickListener(View.OnClickListener { v ->
+            startRStream()
+        })
     }
 
-    private fun initialize(){
+    private fun startRStream() {
+//Create an Observable//
+        val myObservable = getObservable()
+//Create an Observer//
+        val myObserver = getObserver()
+//Subscribe myObserver to myObservable//
+        myObservable.subscribe(getObserver())
+    }
 
+    fun getObserver(): Observer<String> {
+        val mySubscriber = object: Observer<String> {
+            override fun onNext(s: String) {
+                println(s)
+            }
+
+            override fun onComplete() {
+                println("onComplete")
+            }
+
+            override fun onError(e: Throwable) {
+                println("onError")
+            }
+
+            override fun onSubscribe(s: Disposable) {
+                println("onSubscribe")
+            }
+        }
+
+        return mySubscriber
+    }
+
+//Give myObservable some data to emit//
+
+    private fun getObservable(): Observable<String> {
+        return Observable
+            .just("1", "2", "3", "4", "5")
+            .subscribeOn(Schedulers.newThread())
+    }
+
+
+    private fun initialize(){
+/*
+SubscribeOn specify the Scheduler on which an Observable will operate.
+ObserveOn specify the Scheduler on which an observer will observe this Observable.
+So basically SubscribeOn is mostly subscribed (executed)
+on a background thread ( you do not want to block the UI thread while waiting for the observable)
+and also in ObserveOn you want to observe the result on a main thread...
+ */
+        val obs = Observable.fromArray(1,2,3,4,5)
+        val o1 = Observable.just("Hello World!")
+
+        val x=obs.subscribeOn(Schedulers.io())
+
+        Observable.just("long", "longer", "longest")
+            .doOnNext { c -> println("processing item on thread " + Thread.currentThread().name) }
+            .subscribeOn(Schedulers.newThread())
+            .map<Int>({ it.length })
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { length -> println("item length " + length + " received on thread " + Thread.currentThread().name) }
+
+        //**************************************************************************
         val emailObservable = RxTextView.afterTextChangeEvents(editText_email)
             .skipInitialValue()
             .map {
                 wrapper_email.error = null
                 it.view().text.toString()
             }
-            .debounce(1, TimeUnit.SECONDS).observeOn(AndroidSchedulers.mainThread())
+            .debounce(1, TimeUnit.SECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
             .compose(verifyEmailPattern)
             .compose(retryWhenError {
                 wrapper_email.error = it.message
