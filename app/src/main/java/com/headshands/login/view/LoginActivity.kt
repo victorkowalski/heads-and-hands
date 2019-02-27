@@ -70,7 +70,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    fun showSnackBar(view: View, currentWeather: CurrentWeather) {
+    private fun showSnackBar(view: View, currentWeather: CurrentWeather) {
 
         val snackbar = Snackbar.make(
             view, currentWeather.name + "   " + currentWeather.main!!.temp.toString(),
@@ -87,7 +87,7 @@ class LoginActivity : AppCompatActivity() {
         snackbar.show()
     }
 
-    inner class Textwatcher(var v: View) : TextWatcher {
+    private inner class Textwatcher(var v: View) : TextWatcher {
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -123,7 +123,7 @@ class LoginActivity : AppCompatActivity() {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
-    fun isValidPassword(password: String): Boolean {
+    private fun isValidPassword(password: String): Boolean {
 
         val passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{6,}$"
         val passwordMatcher = Regex(passwordPattern)
