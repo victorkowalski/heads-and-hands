@@ -31,6 +31,7 @@ import com.jakewharton.rxbinding2.widget.RxCompoundButton
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import org.reactivestreams.Subscriber
 
 
@@ -80,12 +81,32 @@ class LoginActivity : AppCompatActivity() {
 //Give myObservable some data to emit//
 
     private fun getObservable(): Observable<String> {
-        return Observable
-            .just("1", "2", "3", "4", "5")
+        val observable = Observable
+            .just("1" , "2", "3", "4", "5")
             .subscribeOn(Schedulers.newThread())
+
+
+        return observable
     }
 
+/*
+value -> {
+            if (value == 1) doMethod2();
+            return String.valueOf(value);
+        }
+ */
+private var userNameObservable: Observable<CharSequence>? = null
+    private var passwordObservable: Observable<CharSequence>? = null
 
+    fun test(name: String): Boolean {
+        Log.d("test", "test - {it}")
+        return true;
+    }
+
+    fun test1(name: String): Boolean {
+        Log.d("test", "test - {it}")
+        return true;
+    }
     private fun initialize(){
 /*
 SubscribeOn specify the Scheduler on which an Observable will operate.
@@ -94,19 +115,74 @@ So basically SubscribeOn is mostly subscribed (executed)
 on a background thread ( you do not want to block the UI thread while waiting for the observable)
 and also in ObserveOn you want to observe the result on a main thread...
  */
+        val name = PublishSubject.create<String>()
+        val age = PublishSubject.create<Int>()
+
+        val o1 = Observable.just("Hello World!")
+        val o2 = Observable.just("Hel22222222")
+
+        val editText_email = RxTextView.afterTextChangeEvents(editText_email)
+            .skipInitialValue()
+            .map {
+                wrapper_password.error = null
+                it.view().text.toString()
+            }
+        val passwordObservable = RxTextView.afterTextChangeEvents(editText_password)
+            .skipInitialValue()
+            .map {
+                wrapper_password.error = null
+                it.view().text.toString()
+            }
+
+        Observable.combineLatest<String, String, Boolean>(
+            editText_email, passwordObservable,
+            BiFunction { n, a ->(test(n) == true && test1(a)==true)}
+
+        )
+            .subscribe({
+                Log.d("combineLatest", "onNext - ${it}")
+                button_login.isEnabled = it
+            })
+// Can not omit Type parameters and BiFunction
+        /* Goodddddd
+        Observable.combineLatest<String, String, Boolean>(
+            editText_email, passwordObservable,
+            BiFunction { n, a ->(n.equals("a"))}
+
+        )
+            .subscribe({
+                Log.d("combineLatest", "onNext - ${it}")
+            })
+        */
+
+// If you introduce RxKotlin then you can use type inference
+        /*
+        Observable.combineLatest(name, age) { n, a -> "$n - age:${a}" }
+            .subscribe({
+                Log.d("combineLatest", "onNext - ${it}")
+            })*/
+
+
+/*
+
         val obs = Observable.fromArray(1,2,3,4,5)
         val o1 = Observable.just("Hello World!")
 
-        val x=obs.subscribeOn(Schedulers.io())
-
+        val x=obs.subscribeOn(Schedulers.io())*/
+/*
         Observable.just("long", "longer", "longest")
             .doOnNext { c -> println("processing item on thread " + Thread.currentThread().name) }
             .subscribeOn(Schedulers.newThread())
             .map<Int>({ it.length })
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { length -> println("item length " + length + " received on thread " + Thread.currentThread().name) }
+*/
+
+
 
         //**************************************************************************
+
+        /*
         val emailObservable = RxTextView.afterTextChangeEvents(editText_email)
             .skipInitialValue()
             .map {
@@ -142,7 +218,9 @@ and also in ObserveOn you want to observe the result on a main thread...
         }.subscribe() {
             println(it)
         }
-  /*
+        */
+
+/*
         val isSignInEnabled: Observable<Boolean> = Observable.combineLatest(
             emailObservable,
             passwordObservable,
