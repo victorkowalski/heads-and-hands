@@ -27,15 +27,22 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import com.jakewharton.rxbinding2.view.RxView
 import android.R.attr.password
+import android.widget.Button
+import android.widget.EditText
 import com.jakewharton.rxbinding2.widget.RxCompoundButton
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.disposables.Disposable
+import io.reactivex.functions.Function
+import io.reactivex.observers.DisposableObserver
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import org.reactivestreams.Subscriber
 
 
 class LoginActivity : AppCompatActivity() {
+
+    internal lateinit var observable: Observable<Boolean>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,9 +60,9 @@ class LoginActivity : AppCompatActivity() {
 //Create an Observer//
         val myObserver = getObserver()
 //Subscribe myObserver to myObservable//
-        myObservable.subscribe(getObserver())
+        //myObservable.subscribe(getObserver())
     }
-
+/*
     fun getObserver(): Observer<String> {
         val mySubscriber = object: Observer<String> {
             override fun onNext(s: String) {
@@ -77,7 +84,7 @@ class LoginActivity : AppCompatActivity() {
 
         return mySubscriber
     }
-
+*/
 //Give myObservable some data to emit//
 
     private fun getObservable(): Observable<String> {
@@ -98,6 +105,7 @@ value -> {
 private var userNameObservable: Observable<CharSequence>? = null
     private var passwordObservable: Observable<CharSequence>? = null
 
+    /*
     fun test(name: String): Boolean {
         Log.d("test", "test - {it}")
         return true;
@@ -107,6 +115,60 @@ private var userNameObservable: Observable<CharSequence>? = null
         Log.d("test", "test - {it}")
         return true;
     }
+*/
+    //internal var et_name: EditText, internal var et_password:EditText
+    //internal var btn_login: Button
+
+
+
+    fun updateButton(valid: Boolean) {
+        if (valid) {
+            button_login.setEnabled(true)
+        } else {
+            button_login.setEnabled(false)
+        }
+    }
+
+    fun isValidForm(name: String, password: String): Boolean {
+        val validName = !name.isEmpty()
+
+        if (!validName) {
+            editText_email.setError("Please enter valid name")
+        }
+        /*&& password.equals(AppPrefs.getPassword()*/
+        val validPass = !password.isEmpty()
+        if (!validPass) {
+            editText_password.setError("Incorrect password")
+        }
+        return validName && validPass
+    }
+
+    private fun getObserver(): Observer<Boolean> {
+        return object : Observer<Boolean> {
+            override fun onSubscribe(d: Disposable) {
+                Log.e("TAG", "onSubscribe: " )
+            }
+
+//Every time onNext is called, print the value to Android Studio’s Logcat//
+
+            override fun onNext(s: Boolean) {
+                updateButton(s)
+            }
+
+//Called if an exception is thrown//
+
+            override fun onError(e: Throwable) {
+                Log.e("TAG", "onError: " + e.message)
+            }
+
+//When onComplete is called, print the following to Logcat//
+
+            override fun onComplete() {
+                Log.d("TAG", "onComplete")
+            }
+        }
+    }
+
     private fun initialize(){
 /*
 SubscribeOn specify the Scheduler on which an Observable will operate.
@@ -115,12 +177,43 @@ So basically SubscribeOn is mostly subscribed (executed)
 on a background thread ( you do not want to block the UI thread while waiting for the observable)
 and also in ObserveOn you want to observe the result on a main thread...
  */
+        /*
+        val itemInputNameObservable2 = RxTextView.afterTextChangeEvents(editText_email)
+            .filter(new Func1<TextViewTextChangeEvent, Boolean>() {
+                @Override
+                public Boolean call(TextViewTextChangeEvent event) {
+                    return event.text().length() >= 3;
+                }
+            })
+        */
+
+        //**************************************************************************************
+        val nameObservable = RxTextView.afterTextChangeEvents(editText_email)
+            .skip(1)
+            .map {
+                    charSequence -> charSequence.toString()
+            }
+
+        val passwordObservable = RxTextView.afterTextChangeEvents(editText_password)
+            .skip(1)
+            .map {
+                    charSequence -> charSequence.toString()
+            }
+
+        observable = Observable.combineLatest(nameObservable, passwordObservable,
+            BiFunction {
+                   s, s2 -> isValidForm(s, s2)
+            })
+
+        observable.subscribe(getObserver())
+        //******************************************************************************************
+
         val name = PublishSubject.create<String>()
         val age = PublishSubject.create<Int>()
 
         val o1 = Observable.just("Hello World!")
         val o2 = Observable.just("Hel22222222")
-
+/*
         val editText_email = RxTextView.afterTextChangeEvents(editText_email)
             .skipInitialValue()
             .map {
@@ -143,6 +236,10 @@ and also in ObserveOn you want to observe the result on a main thread...
                 Log.d("combineLatest", "onNext - ${it}")
                 button_login.isEnabled = it
             })
+
+            */
+
+
 // Can not omit Type parameters and BiFunction
         /* Goodddddd
         Observable.combineLatest<String, String, Boolean>(
@@ -278,6 +375,8 @@ and also in ObserveOn you want to observe the result on a main thread...
 
     }
 
+
+    /*
     private val verifyPasswordLength = ObservableTransformer<String, String> { observable ->
         observable.flatMap {
             Observable.just(it).map { it.trim() } //removing white spaces on the string
@@ -329,7 +428,7 @@ and also in ObserveOn you want to observe the result on a main thread...
         } ?: return false
     }
 
-
+*/
     /*
         suspend fun execute(city: City): CityWeather {
         val weather: CurrentWeather? = asyncAwait {
